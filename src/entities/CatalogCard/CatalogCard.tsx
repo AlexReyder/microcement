@@ -1,0 +1,151 @@
+'use client'
+import { ConsultationModal } from '@/features/ConsultationModal'
+import { DefaultButton } from '@/shared/ui/Buttons/DefaultButton/DefaultButton'
+import { ShopIcon } from '@/shared/ui/Icons/ShopIcon/ShopIcon'
+import cn from 'classnames'
+import { useState } from 'react'
+import styles from './CatalogCard.module.scss'
+
+const CatalogCard = ({ className, item }) => {
+	const [priceMode, setPriceMode] = useState('default')
+	const [imageList, setImageList] = useState({
+		main: item.images.previews[0][0],
+		preview: [...item.images.previews.slice(1)],
+	})
+	const [isModalConsultOpen, setModalConsultOpen] = useState(false)
+
+	const handleSetCurrentPreview = (i: number) => {
+		const mainPhoto = imageList.main
+		const indexOfMain = [].concat(...item.images.previews).indexOf(mainPhoto)
+
+		const prevPhoto = [...imageList.preview][i].toString()
+		const indexOfPrev = [].concat(...item.images.previews).indexOf(prevPhoto)
+
+		const prev = [item.images.previews[indexOfMain]]
+		const prevPreview = [...imageList.preview]
+		prevPreview[i] = prev
+
+		const set = {
+			main: item.images.previews[indexOfPrev][0],
+			preview: prevPreview,
+		}
+		console.log(set)
+
+		setImageList(set)
+		// const prevPreview = [...imageList.preview]
+		// prevPreview[i] = [imageList.main]
+
+		// const set = {
+		// 	main: item.images.previews[++i][0],
+		// 	preview: prevPreview,
+		// }
+		// console.log(set)
+
+		// setImageList(set)
+	}
+
+	const handleModalClose = () => {
+		setModalConsultOpen(false)
+	}
+
+	return (
+		<>
+			<div className={cn(styles.card, className)} aria-hidden='true'>
+				<div className={styles.preview}>
+					<img src={imageList.main} alt='Card' className={styles.main_image} />
+					<div className={styles.control}>
+						<div className={styles.category}>{item?.name}</div>
+					</div>
+				</div>
+				<div className={styles.small_previews}>
+					{imageList.preview.map((img: string, i: number) => {
+						if (i >= 4) {
+							return null
+						}
+						return (
+							<button
+								className={styles.small__wrapper}
+								key={`iis${i}`}
+								onClick={() => handleSetCurrentPreview(i)}
+							>
+								<img
+									src={img[0]}
+									// height={100}
+
+									alt={item.name}
+									loading='lazy'
+									className={styles.small_preview}
+									// onClick={changePreview}
+									key={`k${i}`}
+								/>
+							</button>
+						)
+					})}
+				</div>
+				<div className={styles.foot}>
+					<div className={styles.status}>
+						<p className={styles.name}>
+							<span>
+								{item.type === 'TP'
+									? 'Тротуарная плитка'
+									: item.type === 'FP'
+									? 'Фасадная плитка'
+									: null}
+							</span>
+							<span> «{item.name}»</span>
+						</p>
+					</div>
+					<div className={styles.properties}>
+						<p className={styles.size}>Размер, мм: {item.size}</p>
+						<p className={styles.pallet}>На поддоне: {item.pallet}</p>
+					</div>
+					<div className={styles.price__wrapper}>
+						<p className={styles.price}>
+							{priceMode === 'default' ? item.price : item.priceColor} ₽ м
+							<sup>2</sup>
+						</p>
+						<div className={styles.price__tab}>
+							<button
+								onClick={() => setPriceMode('default')}
+								className={`${styles.price__button} ${
+									priceMode === 'default' ? styles.active : null
+								}`}
+							>
+								Серый цвет
+							</button>
+							<button
+								onClick={() => setPriceMode('colored')}
+								className={`${styles.price__button} ${
+									priceMode === 'colored' ? styles.active : null
+								}`}
+							>
+								Цветное исполнение
+							</button>
+						</div>
+					</div>
+
+					<div className={styles.CTA__wrapper}>
+						<DefaultButton
+							className={styles.CTA}
+							onClick={() => setModalConsultOpen(true)}
+						>
+							<ShopIcon />
+							<span>Заказать</span>
+						</DefaultButton>
+					</div>
+				</div>
+				<a href={`/catalog/${item.slug}`} className={styles.link}></a>
+			</div>
+			{isModalConsultOpen ? (
+				<ConsultationModal
+					data={item.name}
+					heading='Сделать заказ'
+					isOpen={isModalConsultOpen}
+					handleClose={handleModalClose}
+				/>
+			) : null}
+		</>
+	)
+}
+
+export default CatalogCard
